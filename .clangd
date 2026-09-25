@@ -1,0 +1,35 @@
+# clangd configuration for Bitcoin Core + Nix.
+#
+# The build uses gcc (nixpkgs stdenv), but clangd parses with clang, so some
+# flags gcc accepts are unknown to clang. The entries below keep clangd quiet
+# without changing how the code is analyzed.
+CompileFlags:
+  Remove:
+    - -fno-canonical-system-headers
+    - -fno-extended-identifiers
+    - -fstack-reuse=*
+    - -fstack-protector-all
+    - -mno-omit-leaf-frame-pointer
+    - -fcf-protection=*
+    - -fharden-compares=*
+    - -fharden-conditional-branches=*
+    - -fzero-call-used-regs=*
+    - -fstack-clash-protection
+    - -fdiagnostics-color=*
+    - -Werror
+    - -Wa,*
+    - -flto=*
+    - -ffile-prefix-map=*
+    - -fdebug-prefix-map=*
+
+# Nix exposes dependency headers (boost, libevent, sqlite, zeromq, openssl,
+# zlib, capnproto) to the compiler wrapper via NIX_CFLAGS_COMPILE, which
+# clangd does not read. They are mirrored into CPLUS_INCLUDE_PATH by
+# shell.nix, so launch nvim from a `nix-shell` (or `nix develop`) session.
+# Alternatively add the include paths here explicitly, e.g.:
+#
+# CompileFlags:
+#   Add: [-isystem, /nix/store/<hash>-boost-<ver>-dev/include]
+Diagnostics:
+  UnusedIncludes: None
+  MissingIncludes: None
